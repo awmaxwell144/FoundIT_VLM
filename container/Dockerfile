@@ -46,7 +46,8 @@ RUN apt-get update && apt-get install -y \
 # Install Python packages
 RUN pip install --no-cache-dir --upgrade pip \
     && pip install --no-cache-dir --no-deps -r requirements.txt \
-    && pip install --no-cache-dir -r req_with_deps.txt 
+    && pip install --no-cache-dir -r req_with_deps.txt \
+    && pip install --no-cache-dir git+https://github.com/openai/CLIP.git
 
 RUN pip install -U "jax[cuda12]"
 
