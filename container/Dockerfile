@@ -17,7 +17,6 @@ RUN chmod +x /usr/bin/entrypoint.sh
 RUN apt-get update && apt-get install -y  \
     git                \
     curl               \
-    cuda-toolkit-12-6  \
     python3            \
     python3-pip        \
     libnss3            \
