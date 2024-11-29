@@ -24,6 +24,11 @@ def copy_task_fitness(env_name):
     # Open the input file in read mode
     with open(env_tff, 'r') as input_file:
         tff = input_file.read()  # Read the content
+
+    # Ensure the directory exists
+    output_dir = os.path.dirname(output_tff)  # 'evaluate/'
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
     
     # Open the output file in write mode and write the content
     with open(output_tff, 'w') as output_file:
@@ -42,10 +47,18 @@ def copy_animate(env_name):
 
 
 def clear_logs():
+    # Define file paths
     reward_log = 'output/rewards_log.txt'
     all_log = 'output/all_logs.txt'
-    with open(reward_log, 'w') as file: pass
-    with open(all_log, 'w') as file: pass
+    
+    # Ensure the directory exists
+    output_dir = os.path.dirname(reward_log)  # 'output/'
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+    
+    # Ensure the files exist and are cleared
+    open(reward_log, 'w').close()
+    open(all_log, 'w').close()
 
 
 

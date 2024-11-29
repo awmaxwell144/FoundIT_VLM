@@ -23,4 +23,6 @@ output/
 
 experiments/
 
-/evaluate/tff.py
+evaluate/
+
+CLIP_tests/
