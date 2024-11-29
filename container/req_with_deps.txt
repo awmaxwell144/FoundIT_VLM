@@ -6,7 +6,6 @@ tensorflow_probability
 tensorflow-gpu
 torch
 torchvision
-cudatoolkit==12.6
 ftfy 
 regex 
 tqdm
