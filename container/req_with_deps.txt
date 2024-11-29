@@ -1,0 +1,6 @@
+httpx
+gymnax
+mle_toolbox
+wandb
+tensorflow_probability
+tensorflow-gpu
