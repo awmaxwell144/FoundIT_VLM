@@ -56,7 +56,12 @@ def process_run(input_string):
     else:
         duration = None
 
-    state_seq = process_state_seq(input_string, duration)
+    state_seq_pattern = r"state_seq\s*(.*)"
+    state_seq_match = re.search(state_seq_pattern, input_string, flags=re.DOTALL)
+    if state_seq_match:
+        state_seq = state_seq_match.group(1).strip() 
+    else:
+        state_seq = ""
 
     return reward_seq, duration, state_seq
 
@@ -78,26 +83,25 @@ def process_error(input_string):
         return input_string
 
 
-def process_state_seq(input_string, duration):
-    state_seq_pattern = r"state_seq\s*(.*)"
-    state_seq_match = re.search(state_seq_pattern, input_string, flags=re.DOTALL)
-    if state_seq_match:
-        state_seq_str = state_seq_match.group(1).strip()  # Extract and strip leading/trailing whitespace
-        # using eval because I directly producing and passing in the input
-        state_seq_all = eval(state_seq_str)
-        state_seq = reformat_state_seq(state_seq_all, duration)
+def process_state_seq(state_seq_str, image_scores):
+    if (state_seq_str != ""):
+        state_seq_all = eval(state_seq)
+        state_seq = reformat_state_seq(state_seq_all, image_scores)
 
     else:
         state_seq = ""
+
     return state_seq
+
     
-def reformat_state_seq(state_seq, duration):
+def reformat_state_seq(state_seq, image_scores):
     counter = 0
+    duration = len(image_scores)
     if (duration <= 15): spread = 2
     elif (duration < 50): spread = 5
     else: spread = 10
 
-    output = f'\nEvery {spread} state sequence(s): '
+    output = f'\nEvery {spread} state sequence(s) and task fitness score: '
     for state in state_seq:
         if (counter % spread == 0):
             output= output + "\n\nTime: " + str(state.time)
@@ -105,9 +109,12 @@ def reformat_state_seq(state_seq, duration):
             output= output + "\nx_dot: " + str(state.x_dot)
             output= output + "\ntheta: " + str(state.theta)
             output= output + "\ntheta_dot: " + str(state.theta_dot)
+            output= output + '\nTask fitness score: ' + str(image_scores[counter])
         counter+=1
     output+= "\n\n"
     return output
+
+
 # Define placeholder functions/classes
 class EnvState:
     def __init__(self, time, x, x_dot, theta, theta_dot):

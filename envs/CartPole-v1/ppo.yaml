@@ -6,7 +6,7 @@ train_config:
   env_name: "CartPole-v1"
   env_kwargs: {}
   env_params: {}
-  num_test_rollouts: 164
+  num_test_rollouts: 200
   
   num_train_envs: 8  # Number of parallel env workers
   max_grad_norm: 0.5  # Global norm to clip gradients by

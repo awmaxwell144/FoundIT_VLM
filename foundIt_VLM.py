@@ -4,10 +4,11 @@ import ollama
 import logging
 import argparse
 import subprocess
-from utils.helpers import read_config, file_to_string, write_to_py, process_run, process_error
+from utils.helpers import read_config, file_to_string, write_to_py, process_run, process_error, process_state_seq
 from utils.setup import setup
 from utils.logs import all_log, reward_log
 from generate_reward.tools.rewards import format_reward
+from evaluate.tff import tff
 
 
 ROOT_DIR = os.getcwd()
@@ -91,7 +92,6 @@ def main(env_name):
         exceptions = []
         reward_location = f'envs/{env_name}/reward.py'
         reward_num = 1 # for log purposes
-        from evaluate.tff import tff
         # for each reward function
         for r in responses:
             logging.info(f'Evaluate {reward_num}')
@@ -112,7 +112,7 @@ def main(env_name):
                  # run model (it shouldnt break if there's an error here)
                 try:
                     logging.info('Running model')
-                    run_output = subprocess.run(['python3', 'run_visualize/run_visualize.py', '-env',f'{env_name}'], 
+                    run_output = subprocess.run(['python3', 'run_visualize/run_visualize.py', '-env',f'{env_name}', '-f','True'], 
                                             capture_output=True, check=True, text=True)
                     logging.info("Run Complete")
                     reward_seq, duration, state_seq = process_run(run_output.stdout)
@@ -127,8 +127,9 @@ def main(env_name):
                 exception = process_error(e.stderr)
            
             # evaluate with provided task fitness function
-            if not encountered_exception:
-                eval = tff(reward_seq, duration)
+            if encountered_exception:
+                image_scores, eval = tff(state_seq, env_name, task_description) # returns state sequence updated with tff scores and final eval
+                state_seq = process_state_seq(state_seq, image_scores)
             else:
                 eval = 0
 
@@ -173,8 +174,10 @@ def main(env_name):
                 
                 # update the messages
                 feedback = policy_feedback.format(reward_function = best_reward["reward_function"],
-                                            reward = best_reward["reward_seq"],
-                                            duration = best_reward["duration"])
+                                            eval = best_reward["eval"],
+                                            duration = best_reward["duration"],
+                                            state_seq = best_reward["state_seq"],
+                                            reward = best_reward["reward_seq"])
                 user = feedback + code_feedback + initial_user
                 messages = [{"role": "system", "content": initial_system}, {"role": "user", "content": user}]
 
@@ -204,6 +207,8 @@ def main(env_name):
         try:
             logging.info('Run and animate final')
             run_output = subprocess.run(['python3', 'run_visualize/run_visualize.py', '-env',f'{env_name}', '-a', 'True'], 
+                                    capture_output=True, check=True, text=True)
+            run_output = subprocess.run(['python3', 'run_visualize/run_visualize.py', '-env',f'{env_name}', '-f', 'True'], 
                                     capture_output=True, check=True, text=True)
             logging.info("Run and animate complete")
         except subprocess.CalledProcessError as e:

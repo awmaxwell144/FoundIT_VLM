@@ -1,13 +1,16 @@
 import jax.numpy as jnp
 
 def compute_reward(state) -> float:
-    # Check if the pole is upright
-    done = jnp.logical_or(
-        state.theta < -jnp.pi / 4,
-        state.theta > jnp.pi / 4,
-    )
-
-    # Reward for not being terminal (i.e., pole is upright)
-    reward = 1.0 - jnp.any(done)
-
-    return reward
+    theta = jnp.abs(state.theta)
+    theta_dot = jnp.abs(state.theta_dot)
+    
+    # Reward for keeping the pole upright
+    reward_theta = 1 - theta
+    
+    # Reward for not moving the cart too much
+    reward_x_dot = 1 - abs(state.x_dot)
+    
+    # Combine both rewards, but with different weights
+    total_reward = (reward_theta + reward_x_dot) / 2
+    
+    return total_reward
