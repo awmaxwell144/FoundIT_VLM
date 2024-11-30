@@ -7,7 +7,8 @@ ROOT_DIR = os.getcwd()
 
 
 def setup(env_name):
-    copy_task_fitness(env_name)
+    # copy task fitness not needed for VLM
+    # copy_task_fitness(env_name)
     copy_animate(env_name)
     clear_logs()
     # Suppress httpx logging

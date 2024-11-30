@@ -4,7 +4,7 @@ import ollama
 import logging
 import argparse
 import subprocess
-from utils.helpers import read_config, file_to_string, write_to_py, process_run, process_error, process_state_seq
+from utils.helpers import read_config, file_to_string, write_to_py, process_run, process_error
 from utils.setup import setup
 from utils.logs import all_log, reward_log
 from generate_reward.tools.rewards import format_reward
@@ -18,7 +18,7 @@ def main(env_name):
     logging.basicConfig(level = logging.INFO)
     
     # load config info
-    logging.debug("Load config")
+    logging.debug(" Load config")
     env_name, task_description, task, iterations, samples = read_config(env_name)
     reward_location = f'envs/{env_name}/reward.py'
 
@@ -26,7 +26,7 @@ def main(env_name):
     setup(env_name)
 
     # load all text prompts
-    logging.debug('Loading prompts')
+    logging.debug(' Loading prompts')
     prompt_dir = f'{ROOT_DIR}/generate_reward/prompts'
     initial_system = file_to_string(f'{prompt_dir}/initial_system.txt')
     code_output_tip = file_to_string(f'{prompt_dir}/code_output_tip.txt')
@@ -54,7 +54,7 @@ def main(env_name):
         num_samples = 0
 
         # logging
-        logging.info(f'\n\n Iteration: {iter+1}')
+        logging.info(f'\n\nIteration: {iter+1}')
         reward_log(f"Iteration: {iter+1}")
         all_log(f"Iteration: {iter+1}")
 
@@ -65,7 +65,7 @@ def main(env_name):
             if (num_samples >= samples): break
 
             try:
-                logging.info(f'Generating reward number {num_samples+1}')
+                logging.info(f' Generating reward number {num_samples+1}')
                 # generate response given messages
                 cur_response = ollama.chat(model = "llama3.1",
                                messages = messages)['message']['content']
@@ -73,11 +73,11 @@ def main(env_name):
                 num_samples+=1
             except Exception as e:
                 # log the error
-                logging.warning(f'Reward generation attempt failed with error: {e}')
+                logging.warning(f' Reward generation attempt failed with error: {e}')
                 # exit()
                 exit()
             if (cur_response == None): 
-                logging.warning('Code terminated due to failed attempt')
+                logging.warning(' Code terminated due to failed attempt')
                 exit()
 
             # format generated response
@@ -94,54 +94,55 @@ def main(env_name):
         reward_num = 1 # for log purposes
         # for each reward function
         for r in responses:
-            logging.info(f'Evaluate {reward_num}')
+            logging.info(f' Evaluate reward number {reward_num}:')
             encountered_exception = False
             exception = "None"
             reward_seq = []
+            final_state = ""
             state_seq = ""
             duration = 0
+            final_reward = 0
+            eval = 0
+            image_scores = []
+
             # add generated reward function to environment code 
             write_to_py(reward_location, r)
 
             # train model (it shouldnt break if there's an error here)
             try:
-                logging.info(f'Training model')
+                logging.info(f' Training model')
                 train_output = subprocess.run(['python3', 'train_model/train.py', '-env',f'{env_name}'], 
                                           capture_output=True, check=True, text=True)
-                logging.info("Training complete")
+                logging.info(" Training complete")
                  # run model (it shouldnt break if there's an error here)
                 try:
-                    logging.info('Running model')
+                    logging.info(' Running model')
                     run_output = subprocess.run(['python3', 'run_visualize/run_visualize.py', '-env',f'{env_name}', '-f','True'], 
                                             capture_output=True, check=True, text=True)
-                    logging.info("Run Complete")
-                    reward_seq, duration, state_seq = process_run(run_output.stdout)
+                    logging.info(" Run Complete")
+                    reward_seq, final_reward, duration, state_seq, final_state = process_run(run_output.stdout)
+                    image_scores, eval = tff(env_name, task_description) # returns state sequence updated with tff scores and final eval
                 except subprocess.CalledProcessError as e:
-                    logging.info("Exception occurred when running the model, moving to next reward")
+                    logging.info(" Exception occurred when running the model, moving to next reward")
                     encountered_exception = True
                     exception = process_error(e.stderr)
                 
             except subprocess.CalledProcessError as e:
-                logging.info("Exception occurred when training model, moving to next reward")
+                logging.info(" Exception occurred when training model, moving to next reward")
                 encountered_exception = True
                 exception = process_error(e.stderr)
-           
-            # evaluate with provided task fitness function
-            if encountered_exception:
-                image_scores, eval = tff(state_seq, env_name, task_description) # returns state sequence updated with tff scores and final eval
-                state_seq = process_state_seq(state_seq, image_scores)
-            else:
-                eval = 0
-
             
             # store run and model information
             reward_info = {
                 "reward_function": r,
                 "reward_seq": reward_seq,
+                "final_reward": final_reward,
                 "duration": duration,
                 "eval": eval,
                 "state_seq": state_seq,
-                "exception": exception
+                "final_state":final_state,
+                "exception": exception,
+                "image_scores": image_scores
             }
             reward_log(reward_info["reward_function"])
             all_log(reward_info, f'Reward {reward_num} Information: ', type = "reward_info")
@@ -157,7 +158,9 @@ def main(env_name):
             if all(exceptions):
                 # choose the first reward to move forward with
                 reward_info = reward_info_all[0]
-                executing_error = executing_error_feedback.format(reward_func = reward_info["reward_function"], initial_user = initial_user, traceback_msg = reward_info["exception"])
+                executing_error = executing_error_feedback.format(reward_func = reward_info["reward_function"],
+                                                                initial_user = initial_user, 
+                                                                traceback_msg = reward_info["exception"])
                 messages = [{"role": "system", "content": initial_system}, {"role": "user", "content": executing_error}]
                 continue #should skip to next iteration of outer loop
 
@@ -176,10 +179,14 @@ def main(env_name):
                 feedback = policy_feedback.format(reward_function = best_reward["reward_function"],
                                             eval = best_reward["eval"],
                                             duration = best_reward["duration"],
-                                            state_seq = best_reward["state_seq"],
-                                            reward = best_reward["reward_seq"])
+                                            final_reward = best_reward["final_reward"],
+                                            final_state = best_reward["final_state"],
+                                            reward_seq = best_reward["reward_seq"],
+                                            state_seq = best_reward["state_seq"])
                 user = feedback + code_feedback + initial_user
                 messages = [{"role": "system", "content": initial_system}, {"role": "user", "content": user}]
+                with open('messages.txt', 'w') as file:
+                    file.write(str(messages))
 
 
     # choose the best reward function, write it to final_reward, run, and animate
@@ -188,7 +195,7 @@ def main(env_name):
         # choose the first reward to move forward with
         best_reward = reward_info_all[0]
         write_to_py(f'output/final_reward.py', best_reward["reward_function"])
-        logging.warning("The final reward function does not execute.")
+        logging.warning(" The final reward function does not execute.")
         all_log(best_reward, "Final Reward Function (does not execute)", type = "reward_info")
     else:
         best_eval = 0
@@ -205,14 +212,14 @@ def main(env_name):
         reward_log(best_reward["reward_function"], "Final Reward Function")
         write_to_py(f'output/final_reward.py', best_reward["reward_function"])
         try:
-            logging.info('Run and animate final')
+            logging.info(' Run and animate final')
             run_output = subprocess.run(['python3', 'run_visualize/run_visualize.py', '-env',f'{env_name}', '-a', 'True'], 
                                     capture_output=True, check=True, text=True)
             run_output = subprocess.run(['python3', 'run_visualize/run_visualize.py', '-env',f'{env_name}', '-f', 'True'], 
                                     capture_output=True, check=True, text=True)
-            logging.info("Run and animate complete")
+            logging.info(" Run and animate complete")
         except subprocess.CalledProcessError as e:
-            logging.info("Exception occurred when running and animating the model")
+            logging.info(" Exception occurred when running and animating the model")
 
 
 

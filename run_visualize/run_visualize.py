@@ -77,7 +77,8 @@ def run_frames(env_name):
         env, env_params, model, model_params
     )
 
-    animate_frames(state_seq, 'evaluate/frames')
+    animate_frames(state_seq, 'evaluate/frames/')
+    print(f'rewards {cum_rewards} duration {len(reward_seq)} state_seq {state_seq}')
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser() 
