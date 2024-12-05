@@ -12,6 +12,7 @@ sys.path.append(parent_directory)
 
 
 cartpole = importlib.import_module("envs.CartPole-v1.CartPole-v1")
+pendulum = importlib.import_module("envs.Pendulum-v1.Pendulum-v1")
 
 def make(env_id: str, **env_kwargs):
     """A JAX-version of OpenAI's infamous env.make(env_name).
@@ -25,16 +26,16 @@ def make(env_id: str, **env_kwargs):
     Returns:
       A tuple of the environment and the default parameters.
     """
-    if env_id not in envs:
-        raise ValueError(f"{env_id} is not in registered gymnax environments.")
 
     # 1. Classic OpenAI Control Tasks
 
     
     if env_id == "CartPole-v1":
         env = cartpole.CartPole(**env_kwargs)
+    elif env_id == "Pendulum-v1":
+        env = pendulum.Pendulum(**env_kwargs)
     else:
-        raise ValueError("Environment ID is not registered.")
+        raise ValueError(f"{env_id} is not in registered gymnax environments.")
 
     # Create a jax PRNG key for random seed control
     return env, env.default_params
@@ -99,5 +100,6 @@ def make(env_id: str, **env_kwargs):
     
 
 envs = [
-    "CartPole-v1"
+    "CartPole-v1",
+    "Pendulum-v1"
 ]

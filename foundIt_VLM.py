@@ -45,7 +45,7 @@ def main(env_name):
 
     # define variables for loop
     responses = []
-
+    logging.info(f' Starting reward generation with {iterations} iteration(s) and {samples} generated reward(s) per iteration')
     # for number of iterations
     for iter in range(iterations):
         # define loop internal vars
@@ -69,7 +69,7 @@ def main(env_name):
                 # generate response given messages
                 cur_response = ollama.chat(model = "llama3.1",
                                messages = messages)['message']['content']
-                
+                # all_log(cur_response, "llm output: ")
                 num_samples+=1
             except Exception as e:
                 # log the error

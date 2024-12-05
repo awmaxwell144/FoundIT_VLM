@@ -2,8 +2,9 @@ import gymnax
 import argparse
 import os
 from utils.helpers import  load_config
+from gymnax.visualize import Visualizer
 from utils.run import rollout_episode, load_neural_network
-from animate import animate, animate_frames
+#from animate import animate, animate_frames
 
 ROOT_DIR = os.getcwd()
 
@@ -28,7 +29,7 @@ def run(env_name):
         env, env_params, model, model_params
     )
 
-    print(f'rewards {cum_rewards} duration {len(reward_seq)} state_seq {state_seq}')
+   #print(f'rewards {cum_rewards} duration {len(reward_seq)} state_seq {state_seq}')
 
 def run_animate(env_name):
 
@@ -52,7 +53,9 @@ def run_animate(env_name):
         env, env_params, model, model_params
     )
 
-    animate(state_seq, f'output/{env_name}_test.mp4')
+    vis = Visualizer(env, env_params, state_seq, cum_rewards)
+    vis.animate(f"output/{env_name}.gif")
+    # animate(state_seq, f'output/{env_name}_test.mp4')
 
 
 def run_frames(env_name):
@@ -76,9 +79,8 @@ def run_frames(env_name):
     state_seq, cum_rewards, reward_seq = rollout_episode(# call rollout_episode function to simulate an episode
         env, env_params, model, model_params
     )
-
-    animate_frames(state_seq, 'evaluate/frames/')
-    print(f'rewards {cum_rewards} duration {len(reward_seq)} state_seq {state_seq}')
+    # animate_frames(state_seq, 'evaluate/frames/')
+    #print(f'rewards {cum_rewards} duration {len(reward_seq)} state_seq {state_seq}')
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser() 
