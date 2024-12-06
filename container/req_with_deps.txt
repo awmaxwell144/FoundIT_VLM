@@ -9,4 +9,5 @@ torchvision
 ftfy 
 regex 
 tqdm
-gym==0.19.0
+"gymnasium[classic_control]"
+

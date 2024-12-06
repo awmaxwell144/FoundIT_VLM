@@ -1,4 +1,6 @@
-"""Visualizer for Gymnax environments."""
+"""Visualizer for Gymnax environments.
+
+source: https://github.com/RobertTLange/gymnax/blob/aef77d5c642ea48b95f34c51d05b8417d9450e15/gymnax/visualize/visualizer.py#L17 """
 
 from typing import Optional
 import gym
@@ -9,7 +11,7 @@ import matplotlib.pyplot as plt
 import gymnax
 from gymnax.visualize import vis_catch
 from gymnax.visualize import vis_circle
-from gymnax.visualize import vis_gym
+from vis import vis_gym
 from gymnax.visualize import vis_maze
 from gymnax.visualize import vis_minatar
 
@@ -31,9 +33,9 @@ class Visualizer(object):
             "MountainCar-v0",
             "MountainCarContinuous-v0",
         ]:
-            self.interval = 100
+            self.interval = 200
         else:
-            self.interval = 50
+            self.interval = 100
 
     def animate(
         self,
@@ -68,8 +70,7 @@ class Visualizer(object):
             "MountainCarContinuous-v0",
         ]:
 
-            # Animations have to use older gym version and pyglet!
-            assert gym.__version__ == "0.19.0"
+
             self.im = vis_gym.init_gym(
                 self.ax, self.env, self.state_seq[0], self.env_params
             )
