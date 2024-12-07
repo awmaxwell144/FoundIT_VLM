@@ -21,6 +21,7 @@ def main(env_name):
     logging.debug(" Load config")
     env_name, task_description, task, iterations, samples = read_config(env_name)
     reward_location = f'envs/{env_name}/reward.py'
+    all_log = f'output/{env_name}_all_logs.txt'
 
     # setup
     setup(env_name)
@@ -56,7 +57,7 @@ def main(env_name):
         # logging
         logging.info(f'\n\nIteration: {iter+1}')
         reward_log(f"Iteration: {iter+1}")
-        all_log(f"Iteration: {iter+1}")
+        all_log(f"Iteration: {iter+1}",  output_file = all_log)
 
         # while true (for each sample in the iteration)
         # while true (for each sample in the iteration)
@@ -145,7 +146,7 @@ def main(env_name):
                 "image_scores": image_scores
             }
             reward_log(reward_info["reward_function"])
-            all_log(reward_info, f'Reward {reward_num} Information: ', type = "reward_info")
+            all_log(reward_info, f'Reward {reward_num} Information: ', type = "reward_info",  output_file = all_log)
             reward_info_all.append(reward_info)
             exceptions.append(encountered_exception)
             reward_num+=1
@@ -196,7 +197,7 @@ def main(env_name):
         best_reward = reward_info_all[0]
         write_to_py(f'output/final_reward.py', best_reward["reward_function"])
         logging.warning(" The final reward function does not execute.")
-        all_log(best_reward, "Final Reward Function (does not execute)", type = "reward_info")
+        all_log(best_reward, "Final Reward Function (does not execute)", type = "reward_info",  output_file = all_log)
     else:
         best_eval = 0
         best_reward = {}
@@ -207,8 +208,8 @@ def main(env_name):
                 best_reward = reward_info
 
         # record stats about *best* reward
-        all_log("Final Reward Information")
-        all_log(best_reward, type = "reward_info")
+        all_log("Final Reward Information",  output_file = all_log)
+        all_log(best_reward, type = "reward_info",  output_file = all_log)
         reward_log(best_reward["reward_function"], "Final Reward Function")
         write_to_py(f'output/final_reward.py', best_reward["reward_function"])
         try:

@@ -3,7 +3,6 @@ import jax.numpy as jnp
 import flax.linen as nn
 from tensorflow_probability.substrates import jax as tfp
 from evosax import NetworkMapper
-import gymnax
 from utils.make import make
 
 

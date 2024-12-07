@@ -5,6 +5,7 @@ from utils.helpers import  load_config, extract_frames
 from vis.visualizer import Visualizer
 from utils.run import rollout_episode, load_neural_network
 #from animate import animate, animate_frames
+from  utils.make import make
 
 ROOT_DIR = os.getcwd()
 
@@ -17,7 +18,7 @@ def run(env_name):
     )
 
     # create environment and parameters using the config
-    env, env_params = gymnax.make(
+    env, env_params = make(
         configs.train_config.env_name,
         **configs.train_config.env_kwargs,
     )
@@ -41,7 +42,7 @@ def run_animate(env_name):
     )
 
     # create environment and parameters using the config
-    env, env_params = gymnax.make(
+    env, env_params = make(
         configs.train_config.env_name,
         **configs.train_config.env_kwargs,
     )
@@ -69,7 +70,7 @@ def run_frames(env_name):
     )
 
     # create environment and parameters using the config
-    env, env_params = gymnax.make(
+    env, env_params = make(
         configs.train_config.env_name,
         **configs.train_config.env_kwargs,
     )
