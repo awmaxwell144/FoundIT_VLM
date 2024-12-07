@@ -33,9 +33,9 @@ class Visualizer(object):
             "MountainCar-v0",
             "MountainCarContinuous-v0",
         ]:
-            self.interval = 200
+            self.interval = 400
         else:
-            self.interval = 100
+            self.interval = 200
 
     def animate(
         self,

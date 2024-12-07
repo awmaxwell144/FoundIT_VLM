@@ -1,12 +1,17 @@
 import jax.numpy as jnp
 
-
-def compute_reward(state):
-    theta = angle_normalize(state.theta)
-    # Calculate distance to top
-    dist_top = jnp.abs(jnp.sin(theta))
+def compute_reward(state) -> float:
     
-    # The reward is based on the distance from the pendulum's center of mass to the top and bottom points.
-    reward = 2 * (1 - (dist_top ** 2))
+    # Normalize theta to be between -pi and pi
+    theta = ((state.theta + jnp.pi) % (2 * jnp.pi)) - jnp.pi
     
-    return reward.squeeze()
+    # Reward for height (theta)
+    height_reward = 0.5 * jnp.sin(theta)  # Normalized reward, peaks at 1 when theta is pi/2
+    
+    # Penalty for swing speed (theta_dot)
+    speed_penalty = -0.01 * abs(state.theta_dot)  # Negative penalty to discourage high speeds
+    
+    # Combine the rewards and penalties into a single value
+    reward = height_reward + speed_penalty
+    
+    return jnp.clip(reward, -1, 1)  # Normalize the reward to [-1, 1]

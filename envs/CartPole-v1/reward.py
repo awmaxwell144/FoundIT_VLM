@@ -1,24 +1,17 @@
 import jax.numpy as jnp
 
 def compute_reward(state) -> float:
-    # Check if the pole is close to being upright
-    theta_close = jnp.abs(state.theta) < 0.1
-    
-    # Check if the cart or pole are within bounds
-    x_within_bounds = jnp.logical_or(
-        state.x >= -1,
-        state.x <= 1,
-    )
-    
-    # Check if the cart or pole's velocities are low
-    vel_low = jnp.logical_and(
-        jnp.abs(state.x_dot) < 0.5,
-        jnp.abs(state.theta_dot) < 0.05,
-    )
-    
-    # Reward is -1 when the pole or cart goes out of bounds, and 0 otherwise
-    reward = -jnp.float32(1)
-    if x_within_bounds and vel_low:
-        reward = 0
-    
+
+    # Get the angle and angular velocity of the pole
+    theta = state.theta
+    theta_dot = state.theta_dot
+
+    # Define the threshold for an upright pole
+    theta_threshold_radians = 0.2
+
+    # Calculate the reward based on the angle and angular velocity
+    reward = -jnp.abs(theta)
+    if jnp.abs(theta) < theta_threshold_radians:
+        reward += 1.0  # Positive reward when the pole is upright
+
     return reward

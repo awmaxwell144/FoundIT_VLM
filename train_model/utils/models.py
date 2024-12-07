@@ -12,6 +12,7 @@ def get_model_ready(rng, config, speed=False):
     # Get number of desired output units
     env, env_params = make(config.env_name, **config.env_kwargs)
 
+
     # Instantiate model class (flax-based)
     if config.train_type == "ES":
         model = NetworkMapper[config.network_name](

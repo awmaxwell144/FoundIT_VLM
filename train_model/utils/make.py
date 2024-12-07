@@ -11,8 +11,7 @@ parent_directory = os.path.abspath(os.path.join(parent_directory, os.pardir))
 sys.path.append(parent_directory)
 
 
-cartpole = importlib.import_module("envs.CartPole-v1.CartPole-v1")
-pendulum = importlib.import_module("envs.Pendulum-v1.Pendulum-v1")
+
 
 def make(env_id: str, **env_kwargs):
     """A JAX-version of OpenAI's infamous env.make(env_name).
@@ -31,9 +30,20 @@ def make(env_id: str, **env_kwargs):
 
     
     if env_id == "CartPole-v1":
+        cartpole = importlib.import_module("envs.CartPole-v1.CartPole-v1")
         env = cartpole.CartPole(**env_kwargs)
     elif env_id == "Pendulum-v1":
+        pendulum = importlib.import_module("envs.Pendulum-v1.Pendulum-v1")
         env = pendulum.Pendulum(**env_kwargs)
+    elif env_id == "Acrobot-v1":
+        acrobot = importlib.import_module("envs.Acrobot-v1.Acrobot-v1")
+        env = acrobot.Acrobot(**env_kwargs)
+    elif env_id == "MountainCar-v0":
+        mountain_car = importlib.import_module("envs.MountainCar-v0.MountainCar-v0")
+        env = mountain_car.MountainCar(**env_kwargs)
+    elif env_id == "MountainCarCont-v0":
+        cont_mountain_car = importlib.import_module("envs.MountainCarCont-v0.MountainCarCont-v0")
+        env = cont_mountain_car.ContinuousMountainCar(**env_kwargs)
     else:
         raise ValueError(f"{env_id} is not in registered gymnax environments.")
 
@@ -41,15 +51,7 @@ def make(env_id: str, **env_kwargs):
     return env, env.default_params
 
     """
-    elif env_id == "Pendulum-v1":
-        env = pendulum.Pendulum(**env_kwargs)
-    elif env_id == "MountainCar-v0":
-        env = mountain_car.MountainCar(**env_kwargs)
-    elif env_id == "MountainCarContinuous-v0":
-        env = continuous_mountain_car.ContinuousMountainCar(**env_kwargs)
-    elif env_id == "Acrobot-v1":
-        env = acrobot.Acrobot(**env_kwargs)
-
+   
     # 2. DeepMind's bsuite environments
     elif env_id == "Catch-bsuite":
         env = catch.Catch(**env_kwargs)

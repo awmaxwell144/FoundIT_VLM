@@ -24,7 +24,6 @@ def main(env_name):
 
     # setup
     setup(env_name)
-
     # load all text prompts
     logging.debug(' Loading prompts')
     prompt_dir = f'{ROOT_DIR}/generate_reward/prompts'
@@ -42,6 +41,7 @@ def main(env_name):
     initial_system = initial_system.format(task_reward_signature_string=reward_signature) + code_output_tip
     initial_user = initial_user.format(task_obs_code_string=task_obs_code_string, task_description=task_description)
     messages = [{"role": "system", "content": initial_system}, {"role": "user", "content": initial_user}]
+    
 
     # define variables for loop
     responses = []

@@ -14,6 +14,9 @@ from jax import lax
 import jax.numpy as jnp
 from gymnax.environments import environment
 from gymnax.environments import spaces
+import importlib
+module = importlib.import_module('envs.Acrobot-v1.reward')
+compute_reward = getattr(module, "compute_reward")
 
 
 @struct.dataclass
@@ -92,7 +95,8 @@ class Acrobot(environment.Environment[EnvState, EnvParams]):
         velocity_2 = jnp.clip(ns[3], -params.max_vel_2, params.max_vel_2)
 
         done_angle = -jnp.cos(joint_angle1) - jnp.cos(joint_angle2 + joint_angle1) > 1.0
-        reward = -1.0 * (1 - done_angle)
+       
+        reward = compute_reward(state)
 
         # Update state dict and evaluate termination conditions
         state = EnvState(
