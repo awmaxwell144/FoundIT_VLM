@@ -9,5 +9,5 @@ torchvision
 ftfy 
 regex 
 tqdm
-"gymnasium[classic_control]"
+gymnasium[classic_control]
 
