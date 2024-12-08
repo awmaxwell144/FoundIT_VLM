@@ -3,7 +3,6 @@ import jax.numpy as jnp
 import flax.linen as nn
 from tensorflow_probability.substrates import jax as tfp
 from evosax import NetworkMapper
-import gymnax
 from utils.make import make
 
 
@@ -11,6 +10,7 @@ def get_model_ready(rng, config, speed=False):
     """Instantiate a model according to obs shape of environment."""
     # Get number of desired output units
     env, env_params = make(config.env_name, **config.env_kwargs)
+
 
     # Instantiate model class (flax-based)
     if config.train_type == "ES":

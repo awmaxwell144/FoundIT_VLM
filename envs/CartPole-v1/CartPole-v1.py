@@ -81,11 +81,6 @@ class CartPole(environment.Environment[EnvState, EnvParams]):
         theta = state.theta + params.tau * state.theta_dot
         theta_dot = state.theta_dot + params.tau * thetaacc
 
-        # Important: Reward is based on termination is previous step transition
-        #reward = 1.0 - prev_terminal
-        # reward = calc_reward(prev_terminal)
-
-        
         reward = compute_reward(state)
 
         # Update state dict and evaluate termination conditions

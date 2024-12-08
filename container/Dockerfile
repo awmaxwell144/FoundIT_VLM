@@ -14,7 +14,7 @@ COPY entrypoint.sh /usr/bin/
 RUN chmod +x /usr/bin/entrypoint.sh
 
 # Install necessary system packages
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install -y  \
     git                \
     curl               \
     python3            \

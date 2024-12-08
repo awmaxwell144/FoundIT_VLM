@@ -19,8 +19,10 @@ output/
 
 
 # ignore the generated reward functions
-/envs/cartpole/reward.py
+*/reward.py
 
 experiments/
 
-/evaluate/tff.py
+evaluate/frames/
+
+CLIP_tests/

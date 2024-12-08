@@ -1,5 +1,4 @@
 """state has the following aspects: x: jnp.ndarray
-    x_dot: jnp.ndarray
     theta: jnp.ndarray
     theta_dot: jnp.ndarray
     time: int"""
