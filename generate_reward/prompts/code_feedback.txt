@@ -1,5 +1,1 @@
-Please carefully analyze the policy feedback and provide a new, improved reward function that can better solve the task. 
-Tips:
-(1) If there is an import statement in the reward function, include that import statement in the new reward function
-(2) Make only small changes
-(3) Include only the compute_reward() function
+Please carefully analyze the policy feedback and provide a new, improved compute_reward() function that can better solve the task. 

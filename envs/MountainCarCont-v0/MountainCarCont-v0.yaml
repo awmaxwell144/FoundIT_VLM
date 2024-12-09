@@ -2,5 +2,5 @@
 task: MountainCarCont-v0
 env_name: MountainCarCont-v0
 description: to apply torque on the free end to swing it into an upright position, with its center of gravity right above the fixed point.
-iterations: 1
-samples: 3
+iterations: 5
+samples: 16
