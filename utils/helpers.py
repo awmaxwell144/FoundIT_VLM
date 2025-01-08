@@ -1,7 +1,8 @@
 import os
 import yaml
 import re
-import ast
+import shutil
+import logging
 
 ROOT_DIR = os.getcwd()
 
@@ -132,4 +133,24 @@ def state_to_string (states):
 
     return output, final_state
 
+def copy_log(source_path, destination_path):
+     # Read the contents of the source file
+    with open(source_path, 'r') as source_file:
+        contents = source_file.read()
     
+    # Create the destination file if it does not exist and write the contents
+    with open(destination_path, 'w') as destination_file:
+        destination_file.write(contents)
+    
+def duplicate_gif(source_path, destination_path):
+    try:
+        shutil.copy(source_path, destination_path)
+    except:
+        logging.info("Failed to duplicate .gif")
+
+if __name__ == "__main__":
+    env_name = "CartPole-v1"
+    samp_iter = "5-5"
+    num = "3"
+    copy_log(f'{ROOT_DIR}/output/all_logs.txt', f'{ROOT_DIR}/output/testing/{env_name}/{samp_iter}_log_{num}.txt')
+    duplicate_gif(f'{ROOT_DIR}/output/{env_name}.gif', f'{ROOT_DIR}/output/testing/{env_name}/{samp_iter}_anim_{num}.gif')

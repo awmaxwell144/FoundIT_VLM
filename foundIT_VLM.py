@@ -3,6 +3,7 @@ import sys
 import ollama
 import logging
 import argparse
+from openai import OpenAI
 import subprocess
 from utils.helpers import read_config, file_to_string, write_to_py, process_run, process_error
 from utils.setup import setup
@@ -14,13 +15,19 @@ from evaluate.tff import tff
 ROOT_DIR = os.getcwd()
 
 # Main
-def main(env_name):
+def main(env_name, withChat):
     logging.basicConfig(level = logging.INFO)
     
     # load config info
     logging.debug(" Load config")
     env_name, task_description, task, iterations, samples = read_config(env_name)
     reward_location = f'envs/{env_name}/reward.py'
+
+    if withChat:
+        client = OpenAI(
+            api_key=os.environ.get("OPENAI_API_KEY"),  # This is the default and can be omitted
+            )
+
 
     # setup
     setup(env_name)
@@ -71,9 +78,13 @@ def main(env_name):
             try:
                 logging.info(f' Generating reward number {num_samples+1}')
                 # generate response given messages
-                cur_response = ollama.chat(model = "llama3.1",
-                               messages = messages)['message']['content']
-                # all_log(cur_response, "llm output: ")
+                if not withChat:
+                    cur_response = ollama.chat(model = "llama3.1",
+                                messages = messages)['message']['content']
+                else:
+                    cur_response = client.chat.completions.create(messages = messages, model = "gpt-4")
+                    cur_response = cur_response.choices[0].message.content
+                
                 num_samples+=1
             except Exception as e:
                 # log the error
@@ -218,7 +229,7 @@ def main(env_name):
             run_output = subprocess.run(['python3', 'run_visualize/run_visualize.py', '-env',f'{env_name}', '-a', 'True'], 
                                     capture_output=True, check=True, text=True)
             logging.info(" Run and animate complete")
-        except subprocess.CalledProcessError as e:
+        except subprocess.CalledProcessError as e: 
             logging.info(" Exception occurred when running and animating the model")
 
     # Open the source file for reading
@@ -245,5 +256,14 @@ if __name__ == "__main__":
         default="CartPole-v1",
         help="Environment name.",
     )
+    parser.add_argument(
+        "-c",
+        "--chat_gpt",
+        action="store_true", 
+        default = False
+    )
+
     args, _ = parser.parse_known_args()
-    main(args.env_name)
+    main(args.env_name, args.chat_gpt)
+
+    
