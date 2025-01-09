@@ -74,7 +74,7 @@ class Catch(environment.Environment[EnvState, EnvParams]):
         # Rewrite reward as boolean multiplication
         prev_done = ball_y == paddle_y
         catched = paddle_x == ball_x
-        reward = compute_reward()
+        reward = compute_reward(state)
 
         state = state.replace(
             ball_x=ball_x,

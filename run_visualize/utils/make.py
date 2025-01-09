@@ -45,7 +45,7 @@ def make(env_id: str, **env_kwargs):
         cont_mountain_car = importlib.import_module("envs.MountainCarCont-v0.MountainCarCont-v0")
         env = cont_mountain_car.ContinuousMountainCar(**env_kwargs)
     elif env_id == "Catch-v1":
-        catch = importlib.import_modile("envs.Catch-v1.Catch-v1")
+        catch = importlib.import_module("envs.Catch-v1.Catch-v1")
         env = catch.Catch(**env_kwargs)
     else:
         raise ValueError(f"{env_id} is not in registered gymnax environments.")
@@ -106,5 +106,6 @@ def make(env_id: str, **env_kwargs):
 
 envs = [
     "CartPole-v1",
-    "Pendulum-v1"
+    "Pendulum-v1",
+
 ]

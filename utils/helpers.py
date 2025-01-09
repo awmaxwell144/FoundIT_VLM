@@ -148,9 +148,23 @@ def duplicate_gif(source_path, destination_path):
     except:
         logging.info("Failed to duplicate .gif")
 
+
+
+import argparse
 if __name__ == "__main__":
+    # Initialize the argument parser
+    parser = argparse.ArgumentParser(description="Script to copy logs and duplicate GIFs.")
+    
+    # Add a command-line argument for 'num'
+    parser.add_argument(
+        "--num", 
+        type=str, 
+        required=True
+    )
+    # Parse the arguments
+    args = parser.parse_args()
     env_name = "CartPole-v1"
-    samp_iter = "5-5"
-    num = "3"
+    samp_iter = "5-3"
+    num = args.num
     copy_log(f'{ROOT_DIR}/output/all_logs.txt', f'{ROOT_DIR}/output/testing/{env_name}/{samp_iter}_log_{num}.txt')
     duplicate_gif(f'{ROOT_DIR}/output/{env_name}.gif', f'{ROOT_DIR}/output/testing/{env_name}/{samp_iter}_anim_{num}.gif')
