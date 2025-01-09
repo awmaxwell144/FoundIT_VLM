@@ -1,5 +1,0 @@
-task: Catch-v1
-env_name: Catch-v1
-description: to position the paddle (the letter P) so it intercepts the falling ball (the letter B)
-iterations: 1
-samples: 1

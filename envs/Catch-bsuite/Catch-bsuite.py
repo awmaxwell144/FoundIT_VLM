@@ -14,7 +14,7 @@ import matplotlib.pyplot as plt
 from gymnax.environments import environment
 from gymnax.environments import spaces
 import importlib
-module = importlib.import_module('envs.Catch-v1.reward')
+module = importlib.import_module('envs.Catch-bsuite.reward')
 compute_reward = getattr(module, "compute_reward")
 
 

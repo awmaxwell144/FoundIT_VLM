@@ -9,7 +9,7 @@
 
 # ignore all /output/ 
 */output/
-output/
+output/*
 
 # ignore .pkl files
 *.pkl

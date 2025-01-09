@@ -36,6 +36,7 @@ def write_to_py(output_file, code):
             py_file.writelines(code)
 
 def process_run(input_string):
+
      # Regular expression to find the list between 'rewards' and 'duration'
     rewards_pattern = r"rewards\s*\[\s*(.*?)\s*\]\s*duration"
     duration_pattern = r"duration\s*(\d+)\s*"
@@ -99,14 +100,14 @@ def extract_states(state_seq):
     # Use a regular expression to find all matches
     env_pattern = r"EnvState\((.*?\))\)"
     type_pattern = r"\s*([a-zA-Z]+)=Array"
-    value_pattern = r"=Array\((.*?),"
+    value_pattern = r"=Array\((\[[^\]]+\]|[^,]+),"
     matches = re.findall(env_pattern, state_seq)
     for match in matches:
         objs = re.findall(type_pattern, match)
         vals = re.findall(value_pattern, match)
         state = {}
         for i in range(len(objs)):
-            state[objs[i]] = float(vals[i])
+            state[objs[i]] = vals[i]
         states.append(state)
     return state_to_string(states)
 
@@ -149,6 +150,32 @@ def duplicate_gif(source_path, destination_path):
         logging.info("Failed to duplicate .gif")
 
 
+def rewrite_yaml(file_path, updates):
+    """
+    Rewrites a .yaml file with specified updates.
+    
+    :param file_path: Path to the .yaml file to be rewritten.
+    :param updates: A dictionary containing the updates to apply to the YAML file.
+    """
+    try:
+        # Read the existing .yaml file
+        with open(file_path, 'r') as file:
+            data = yaml.safe_load(file)
+        
+        # Update the YAML content with the provided updates
+        if not isinstance(data, dict):
+            raise ValueError("The YAML file content must be a dictionary.")
+        
+        data.update(updates)
+        
+        # Write the updated content back to the file
+        with open(file_path, 'w') as file:
+            yaml.dump(data, file, default_flow_style=False, sort_keys=False)
+        
+        print(f"Successfully updated {file_path}.")
+    
+    except Exception as e:
+        print(f"An error occurred while rewriting the .yaml file: {e}")
 
 import argparse
 if __name__ == "__main__":
@@ -157,14 +184,36 @@ if __name__ == "__main__":
     
     # Add a command-line argument for 'num'
     parser.add_argument(
+        "--env",
+        type=str,
+        required=True
+    )
+    parser.add_argument(
         "--num", 
         type=str, 
         required=True
     )
+    parser.add_argument(
+        "--samp", 
+        type=int, 
+        required=True
+    )
+    parser.add_argument(
+        "--iter", 
+        type=int, 
+        required=True
+    )
     # Parse the arguments
     args = parser.parse_args()
-    env_name = "CartPole-v1"
-    samp_iter = "5-3"
+    env_name = args.env
+    samp_iter = str(args.samp) + "-" + str(args.iter)
     num = args.num
+
+    updates_to_apply = {
+        "iterations": args.iter,
+        "samples": args.samp
+    }
+
     copy_log(f'{ROOT_DIR}/output/all_logs.txt', f'{ROOT_DIR}/output/testing/{env_name}/{samp_iter}_log_{num}.txt')
     duplicate_gif(f'{ROOT_DIR}/output/{env_name}.gif', f'{ROOT_DIR}/output/testing/{env_name}/{samp_iter}_anim_{num}.gif')
+    rewrite_yaml(f'{ROOT_DIR}/envs/{env_name}/{env_name}.yaml', updates_to_apply)
