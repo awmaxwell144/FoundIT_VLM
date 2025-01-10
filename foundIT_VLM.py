@@ -3,6 +3,7 @@ import sys
 import ollama
 import logging
 import argparse
+from openai import OpenAI
 import subprocess
 from utils.helpers import read_config, file_to_string, write_to_py, process_run, process_error
 from utils.setup import setup
@@ -14,14 +15,19 @@ from evaluate.tff import tff
 ROOT_DIR = os.getcwd()
 
 # Main
-def main(env_name):
+def main(env_name, withChat):
     logging.basicConfig(level = logging.INFO)
     
     # load config info
     logging.debug(" Load config")
     env_name, task_description, task, iterations, samples = read_config(env_name)
     reward_location = f'envs/{env_name}/reward.py'
-    all_log = f'output/{env_name}_all_logs.txt'
+
+    if withChat:
+        client = OpenAI(
+            api_key=os.environ.get("OPENAI_API_KEY"),  # This is the default and can be omitted
+            )
+
 
     # setup
     setup(env_name)
@@ -41,7 +47,8 @@ def main(env_name):
     # concatenate prompts into initial messages
     initial_system = initial_system.format(task_reward_signature_string=reward_signature) + code_output_tip
     initial_user = initial_user.format(task_obs_code_string=task_obs_code_string, task_description=task_description)
-    messages = [{"role": "system", "content": initial_system}, {"role": "user", "content": initial_user}]
+    system = initial_system
+    user = initial_user
     
 
     # define variables for loop
@@ -56,8 +63,8 @@ def main(env_name):
 
         # logging
         logging.info(f'\n\nIteration: {iter+1}')
-        reward_log(f"Iteration: {iter+1}")
-        all_log(f"Iteration: {iter+1}",  output_file = all_log)
+        reward_log(f'Iteration: {iter+1}')
+        all_log(f"Iteration: {iter+1}")
 
         # while true (for each sample in the iteration)
         # while true (for each sample in the iteration)
@@ -65,12 +72,19 @@ def main(env_name):
             # if you have enough samples, break
             if (num_samples >= samples): break
 
+            # reset messages list for each generation
+            messages = [{"role": "system", "content": system}, {"role": "user", "content": user}]
+
             try:
                 logging.info(f' Generating reward number {num_samples+1}')
                 # generate response given messages
-                cur_response = ollama.chat(model = "llama3.1",
-                               messages = messages)['message']['content']
-                # all_log(cur_response, "llm output: ")
+                if not withChat:
+                    cur_response = ollama.chat(model = "llama3.1",
+                                messages = messages)['message']['content']
+                else:
+                    cur_response = client.chat.completions.create(messages = messages, model = "gpt-4")
+                    cur_response = cur_response.choices[0].message.content
+                
                 num_samples+=1
             except Exception as e:
                 # log the error
@@ -146,7 +160,7 @@ def main(env_name):
                 "image_scores": image_scores
             }
             reward_log(reward_info["reward_function"])
-            all_log(reward_info, f'Reward {reward_num} Information: ', type = "reward_info",  output_file = all_log)
+            all_log(reward_info, f'Reward {reward_num} Information: ', type = "reward_info")
             reward_info_all.append(reward_info)
             exceptions.append(encountered_exception)
             reward_num+=1
@@ -162,7 +176,7 @@ def main(env_name):
                 executing_error = executing_error_feedback.format(reward_func = reward_info["reward_function"],
                                                                 initial_user = initial_user, 
                                                                 traceback_msg = reward_info["exception"])
-                messages = [{"role": "system", "content": initial_system}, {"role": "user", "content": executing_error}]
+                user = executing_error
                 continue #should skip to next iteration of outer loop
 
             # if some execute
@@ -185,19 +199,17 @@ def main(env_name):
                                             reward_seq = best_reward["reward_seq"],
                                             state_seq = best_reward["state_seq"])
                 user = feedback + code_feedback + initial_user
-                messages = [{"role": "system", "content": initial_system}, {"role": "user", "content": user}]
-                with open('messages.txt', 'w') as file:
-                    file.write(str(messages))
+                
 
 
-    # choose the best reward function, write it to final_reward, run, and animate
+    # For final reward choose the best reward function, write it to final_reward, run, and animate
     # if all generate execution errors
     if all(exceptions):
         # choose the first reward to move forward with
         best_reward = reward_info_all[0]
         write_to_py(f'output/final_reward.py', best_reward["reward_function"])
         logging.warning(" The final reward function does not execute.")
-        all_log(best_reward, "Final Reward Function (does not execute)", type = "reward_info",  output_file = all_log)
+        all_log(best_reward, "Final Reward Function (does not execute)", type = "reward_info")
     else:
         best_eval = 0
         best_reward = {}
@@ -208,19 +220,27 @@ def main(env_name):
                 best_reward = reward_info
 
         # record stats about *best* reward
-        all_log("Final Reward Information",  output_file = all_log)
-        all_log(best_reward, type = "reward_info",  output_file = all_log)
+        all_log("Final Reward Information")
+        all_log(best_reward, type = "reward_info")
         reward_log(best_reward["reward_function"], "Final Reward Function")
         write_to_py(f'output/final_reward.py', best_reward["reward_function"])
         try:
             logging.info(' Run and animate final')
             run_output = subprocess.run(['python3', 'run_visualize/run_visualize.py', '-env',f'{env_name}', '-a', 'True'], 
                                     capture_output=True, check=True, text=True)
-            run_output = subprocess.run(['python3', 'run_visualize/run_visualize.py', '-env',f'{env_name}', '-f', 'True'], 
-                                    capture_output=True, check=True, text=True)
             logging.info(" Run and animate complete")
-        except subprocess.CalledProcessError as e:
+        except subprocess.CalledProcessError as e: 
             logging.info(" Exception occurred when running and animating the model")
+
+    # Open the source file for reading
+    with open('output/all_logs.txt', 'r') as src:
+        # Read the content of the source file
+        content = src.read()
+
+    # Open the destination file for writing (create if it doesn't exist)
+    with open(f'output/{env_name}_all_logs.txt', 'w') as dest:
+        # Write the content to the destination file
+        dest.write(content)
 
 
 
@@ -236,5 +256,14 @@ if __name__ == "__main__":
         default="CartPole-v1",
         help="Environment name.",
     )
+    parser.add_argument(
+        "-c",
+        "--chat_gpt",
+        action="store_true", 
+        default = False
+    )
+
     args, _ = parser.parse_known_args()
-    main(args.env_name)
+    main(args.env_name, args.chat_gpt)
+
+    

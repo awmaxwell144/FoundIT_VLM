@@ -1,20 +1,21 @@
+# Source: https://github.com/RobertTLange/gymnax-blines/blob/main/agents/Catch-bsuite/ppo.yaml
 train_config:
   train_type: "PPO"
   num_train_steps: 100000
   evaluate_every_epochs: 500
 
-  env_name: "Pendulum-v1"
+  env_name: "Catch-bsuite"
   env_kwargs: {}
   env_params: {}
   num_test_rollouts: 164
   
-  num_train_envs: 32  # Number of parallel env workers
+  num_train_envs: 16  # Number of parallel env workers
   max_grad_norm: 1.0  # Global norm to clip gradients by
   gamma: 0.99  # Discount factor
-  n_steps: 16 # "GAE n-steps"
+  n_steps: 32 # "GAE n-steps"
   n_minibatch: 4 # "Number of PPO minibatches"
-  lr_begin: 1e-03  # Start PPO learning rate
-  lr_end: 1e-03 #  End PPO learning rate
+  lr_begin: 5e-04  # Start PPO learning rate
+  lr_end: 5e-04 #  End PPO learning rate
   lr_warmup: 0.05 # Prop epochs until warmup is completed 
   epoch_ppo: 4  # "Number of PPO epochs on a single batch"
   clip_eps: 0.2 # "Clipping range"
@@ -22,10 +23,11 @@ train_config:
   entropy_coeff: 0.01 # "Entropy loss coefficient"
   critic_coeff: 0.5  # "Value loss coefficient"
 
-  network_name: "Gaussian-MLP"
+  network_name: "Categorical-MLP"
   network_config:
     num_hidden_units: 64
     num_hidden_layers: 2
+    flatten_2d: True
 
 log_config:
   time_to_track: ["num_steps"]

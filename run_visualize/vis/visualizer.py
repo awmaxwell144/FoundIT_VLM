@@ -33,7 +33,7 @@ class Visualizer(object):
             "MountainCar-v0",
             "MountainCarContinuous-v0",
         ]:
-            self.interval = 400
+            self.interval = 200
         else:
             self.interval = 200
 

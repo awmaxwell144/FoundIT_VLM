@@ -1,18 +1,27 @@
+import numpy as np
 import jax.numpy as jnp
 
-
 def compute_reward(state) -> float:
-    params = EnvParams()  # Get default environment parameters
+    # extract state variables
+    position = state.position
+    velocity = state.velocity
     
-    # Calculate distance from center of gravity to fixed point
-    dist_to_fixed_point = jnp.abs(state.position - params.goal_position)
+    # set target position
+    target_position = 0.
+
+    # calculate distance from the target position
+    distance = jnp.abs(position - target_position)
     
-    # Reward for being upright and having zero velocity
-    reward = 100 * (
-        (state.position >= params.goal_position) * (state.velocity >= params.goal_velocity)
-    )
+    # encourage the agent to increase speed to the right
+    if velocity > 0 and position > target_position:
+        reward_velocity = 1.0
+    else:
+        reward_velocity = -1.0
     
-    # Penalize distance from center of gravity to fixed point
-    reward -= 10 * dist_to_fixed_point
-    
-    return jnp.maximum(reward, -0.1)  # Ensure reward is in [-0.1, infinity]
+    # we want the car to reach target position, so give lower reward if the car is far from the target
+    reward_position = -distance
+
+    # total reward combines position and velocity rewards
+    reward = reward_position + reward_velocity 
+
+    return reward

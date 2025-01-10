@@ -9,7 +9,7 @@
 
 # ignore all /output/ 
 */output/
-output/
+output/*
 
 # ignore .pkl files
 *.pkl
@@ -26,3 +26,5 @@ experiments/
 evaluate/frames/
 
 CLIP_tests/
+
+run.sh
