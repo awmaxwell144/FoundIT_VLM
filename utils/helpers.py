@@ -194,6 +194,11 @@ if __name__ == "__main__":
         required=True
     )
     parser.add_argument(
+        "--cur",
+        type=str,
+        required=True
+    )
+    parser.add_argument(
         "--samp", 
         type=int, 
         required=True
@@ -206,7 +211,7 @@ if __name__ == "__main__":
     # Parse the arguments
     args = parser.parse_args()
     env_name = args.env
-    samp_iter = str(args.samp) + "-" + str(args.iter)
+    samp_iter = args.cur
     num = args.num
 
     updates_to_apply = {

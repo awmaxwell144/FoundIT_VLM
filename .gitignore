@@ -26,3 +26,5 @@ experiments/
 evaluate/frames/
 
 CLIP_tests/
+
+run.sh
